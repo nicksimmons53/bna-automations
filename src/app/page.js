@@ -14,9 +14,18 @@ import axios from "axios";
 // ];
 
 const fetcher = (url) => fetch(`${url}`).then(r => r.json())
+const useGetAsanaUsers = () => {
+  const { data, error, isLoading } = useSWR("http://18.233.248.177/asana/users", fetcher);
+
+  return {
+    asanaUsers: data,
+    isLoading,
+    isError: error,
+  };
+}
 
 export default function Home() {
-  const { asanaUsers, isLoading, isError } = getAsanaUsers();
+  const { asanaUsers, isLoading, isError } = useGetAsanaUsers();
   const [pushDataActive, setPushDataActive] = React.useState(false);
   const [leadText, setLeadText] = React.useState("");
   const { control, handleSubmit, reset, setValue } = useForm({
@@ -35,16 +44,6 @@ export default function Home() {
       "userName": ""
     }
   });
-
-  const getAsanaUsers = () => {
-    const { data, error, isLoading } = useSWR("http://18.233.248.177/asana/users", fetcher);
-
-    return {
-      asanaUsers: data,
-      isLoading,
-      isError: error,
-    };
-  }
 
   const pullLeadData = () => {
     let data = leadText.split("\n");
