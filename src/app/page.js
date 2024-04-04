@@ -15,7 +15,7 @@ import axios from "axios";
 
 const fetcher = (url) => fetch(`${url}`).then(r => r.json())
 const useGetAsanaUsers = () => {
-  const { data, error, isLoading } = useSWR("http://18.233.248.177/asana/users", fetcher);
+  const { data, error, isLoading } = useSWR("https://automations.api.e-o3.com/asana/users", fetcher);
 
   return {
     asanaUsers: data,
@@ -75,16 +75,17 @@ export default function Home() {
     };
 
     // Create asana task
-    axios.post('http://18.233.248.177/asana/tasks', newData)
+    axios.post('https://automations.api.e-o3.com/asana/tasks', newData)
       .then(res => console.log(res))
       .catch(e => console.error(e));
 
     // Create hubspot contact
-    axios.post('http://18.233.248.177/hubspot/contacts', newData)
+    axios.post('https://automations.api.e-o3.com/hubspot/contacts', newData)
       .then(res => console.log(res))
       .catch(e => console.error(e));
 
     setPushDataActive(false);
+    reset();
   }
 
   if (!asanaUsers) {
