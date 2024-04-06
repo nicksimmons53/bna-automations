@@ -49,11 +49,13 @@ export default function Home() {
     let data = leadText.split("\n");
 
     data.forEach((attr, index) => {
-      if (attr.split(":").length === 1) {
-        setValue("Notes", attr);
-      } else {
-        let splitAttr = attr.split(":");
-        setValue(splitAttr[0], splitAttr[1].trim());
+      let parsedAttr = attr.split(":");
+      console.log(parsedAttr);
+      if (parsedAttr.length > 1) {
+        setValue(parsedAttr[0], parsedAttr[1].trim());
+      } else if (attr === " ") {
+        setValue("Notes", data.slice(index+1).join("\n"));
+        data.splice(index);
       }
     });
 
