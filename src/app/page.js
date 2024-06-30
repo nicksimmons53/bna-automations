@@ -6,6 +6,7 @@ import {Button, Divider, Input, Select, SelectItem, Spinner, Textarea} from "@ne
 import useSWR from "swr";
 import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
+import {useSession} from "next-auth/react";
 
 // const titles = ["Dealer", "Distributor", "Customer", "Service"];
 // const industries = [
@@ -24,6 +25,17 @@ const useGetAsanaUsers = () => {
   };
 }
 
+function titleCase(str) {
+  let splitStr = str.toLowerCase().split(' ');
+  for (let i = 0; i < splitStr.length; i++) {
+    // You do not need to check if i is larger than splitStr length, as your for does that for you
+    // Assign it back to the array
+    splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+  }
+  // Directly return the joined string
+  return splitStr.join(' ');
+}
+
 export default function Home() {
   const { asanaUsers, isLoading, isError } = useGetAsanaUsers();
   const [pushDataActive, setPushDataActive] = React.useState(false);
@@ -34,6 +46,7 @@ export default function Home() {
       "Industry": "",
       "Email": "",
       "Country": "",
+      "Region": "",
       "Phone Number": "",
       "Title": "",
       "Notes": "",
@@ -47,17 +60,30 @@ export default function Home() {
 
   const pullLeadData = () => {
     let data = leadText.split("\n");
-
-    data.forEach((attr, index) => {
-      let parsedAttr = attr.split(":");
-      console.log(parsedAttr);
-      if (parsedAttr.length > 1) {
-        setValue(parsedAttr[0], parsedAttr[1].trim());
-      } else if (attr === " ") {
-        setValue("Notes", data.slice(index+1).join("\n"));
-        data.splice(index);
+    let obj = {};
+    let keys = [];
+    let values = [];
+    data.filter(attr => attr !== "").forEach((attr, index) => {
+      if (index % 2 !== 0) {
+        values.push(attr);
+      } else {
+        keys.push(attr);
       }
     });
+
+    keys.forEach((attr, index) => {
+      obj[attr] = values[index];
+    });
+
+    setValue("Name", `${obj["First Name"]} ${obj["Last Name"]}`);
+    setValue("Industry", titleCase(obj["Industry"]));
+    setValue("Email", obj["Email"]);
+    setValue("Country", obj["Country"]);
+    setValue("Region", obj["Region"]);
+    setValue("Phone Number", obj["Phone Number"]);
+    setValue("Title", obj["Identity"]);
+    setValue("Notes", obj["Your Message"]);
+    setValue("Company", obj["Company / Organization"]);
 
     setPushDataActive(true);
   }

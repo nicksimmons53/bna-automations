@@ -8,23 +8,30 @@ import {
   CognitoIdentityProviderClient,
   InitiateAuthCommand
 } from "@aws-sdk/client-cognito-identity-provider";
-import hmacSHA256 from 'crypto-js/hmac-sha256';
-import Base64 from 'crypto-js/enc-base64';
+import {decodeFromBase64} from "next/dist/build/webpack/loaders/utils";
+import crypto from "crypto";
 
-const CryptoJS = require('crypto-js');
+const SECRET = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_SECRET;
+const CLIENT_ID = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID;
 
-const initiateAuth = ({ username, password }) => {
-  let hashKey = hmacSHA256(process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_SECRET, username + process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID)
-  console.log(hashKey.toString(CryptoJS.enc.Base64));
+// const SECRET = "1ul1a35qlt54oe9tii49ald86ja3b8h77el3bcmg3vat59a0eli";
+// const CLIENT_ID = "7g6rq1f6j6685c1m59ljlgi97n";
+
+const initiateAuth = async ({ username, password }) => {
+  const hash = crypto
+    .createHmac("SHA256", SECRET)
+    .update(`${username}${CLIENT_ID}`)
+    .digest("base64");
+
   const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
   const command = new InitiateAuthCommand({
     AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
     AuthParameters: {
       USERNAME: username,
       PASSWORD: password,
-      SECRET_HASH: Base64.stringify(hmacSHA256(process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_SECRET, username + process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID))
+      SECRET_HASH: hash
     },
-    ClientId: process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID,
+    ClientId: CLIENT_ID,
   });
 
   return client.send(command);
