@@ -8,8 +8,8 @@ import {initiateAuth} from "@/app/auth/route";
 export default function Page() {
   const { control, handleSubmit } = useForm({
     defaultValues: {
-      username: "nick.simmons",
-      password: "Miles0812!"
+      username: "",
+      password: ""
     }
   });
 
