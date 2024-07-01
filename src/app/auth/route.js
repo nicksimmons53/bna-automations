@@ -1,21 +1,16 @@
-'use client'
-
-// import {CognitoIdentityClient} from "@aws-sdk/client-cognito-identity";
-// import { Auth } from "aws-amplify";
+'use server'
 
 import {
   AuthFlowType,
   CognitoIdentityProviderClient,
   InitiateAuthCommand
 } from "@aws-sdk/client-cognito-identity-provider";
-import {decodeFromBase64} from "next/dist/build/webpack/loaders/utils";
 import crypto from "crypto";
+import {cookies} from "next/headers";
+import {redirect} from "next/navigation";
 
 const SECRET = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_SECRET;
 const CLIENT_ID = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID;
-
-// const SECRET = "1ul1a35qlt54oe9tii49ald86ja3b8h77el3bcmg3vat59a0eli";
-// const CLIENT_ID = "7g6rq1f6j6685c1m59ljlgi97n";
 
 const initiateAuth = async ({ username, password }) => {
   const hash = crypto
@@ -34,7 +29,19 @@ const initiateAuth = async ({ username, password }) => {
     ClientId: CLIENT_ID,
   });
 
-  return client.send(command);
+  let res = await client.send(command);
+
+  if (res.AuthenticationResult.AccessToken) {
+    cookies().set("accessToken", res.AuthenticationResult.AccessToken);
+    await redirect("/dashboard")
+  }
+
+  return res;
 }
 
-export { initiateAuth };
+const finishAuth = async() => {
+  cookies().delete("accessToken");
+  await redirect("/login");
+}
+
+export { initiateAuth, finishAuth };

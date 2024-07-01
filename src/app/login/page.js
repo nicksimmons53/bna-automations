@@ -1,10 +1,9 @@
 'use client'
 
-// import { authenticate } from "@/app/lib/actions";
 import {Button, Divider, Input} from "@nextui-org/react";
 import {useForm, Controller} from "react-hook-form";
-import {signIn} from "next-auth/react";
-import {initiateAuth} from "@/app/lib/actions/authenticate";
+import {initiateAuth} from "@/app/auth/route";
+
 
 export default function Page() {
   const { control, handleSubmit } = useForm({
@@ -16,7 +15,6 @@ export default function Page() {
 
   const onSubmit = async(data) => {
     let res = await initiateAuth(data);
-    console.log(res);
   }
 
   return (
