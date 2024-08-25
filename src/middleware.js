@@ -5,7 +5,7 @@ export function middleware(request) {
     return Response.redirect(new URL('/dashboard', request.url));
   }
 
-  if (!currentUser && !request.nextUrl.pathname.startsWith('/login')) {
+  if (!currentUser && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.includes('/password-reset')) {
     return Response.redirect(new URL('/login', request.url));
   }
 }
