@@ -6,20 +6,24 @@ import {Button, Divider, Input, Select, SelectItem, Spinner, Textarea} from "@ne
 import useSWR from "swr";
 import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
-import {useSession} from "next-auth/react";
 
-// const titles = ["Dealer", "Distributor", "Customer", "Service"];
-// const industries = [
-//   "Food Safety", "Beverage", "Dentistry", "Healthcare", "Pet Grooming", "Professional Laundry", "Professional Cleaning",
-//   "Professional Ozone Applications", "Hydrogen Home Applications", "Disinfection Home Applications", "Other"
-// ];
+const priorities = [
+  { key: "low", label: "Low", value: "LOW" },
+  { key: "medium", label: "Medium", value: "MEDIUM" },
+  { key: "high", label: "High", value: "HIGH" },
+];
+const types = [
+  { key: "email", label: "Email", value: "EMAIL" },
+  { key: "call", label: "Call", value: "CALL" },
+  { key: "todo", label: "To-Do", value: "TODO" },
+];
 
 const fetcher = (url) => fetch(`${url}`).then(r => r.json())
-const useGetAsanaUsers = () => {
-  const { data, error, isLoading } = useSWR("https://automations.api.e-o3.com/asana/users", fetcher);
+const useGetHubspotOwners = () => {
+  const { data, error, isLoading } = useSWR("https://automations.api.e-o3.com/hubspot/owners", fetcher);
 
   return {
-    asanaUsers: data,
+    hubspotOwners: data,
     isLoading,
     isError: error,
   };
@@ -37,10 +41,10 @@ function titleCase(str) {
 }
 
 export default function Home() {
-  const { asanaUsers, isLoading, isError } = useGetAsanaUsers();
+  const { hubspotOwners, isLoading, isError } = useGetHubspotOwners();
   const [pushDataActive, setPushDataActive] = React.useState(false);
   const [leadText, setLeadText] = React.useState("");
-  const { control, handleSubmit, reset, setValue } = useForm({
+  const { control, handleSubmit, reset, setValue, getValues } = useForm({
     defaultValues: {
       "Name": "",
       "Industry": "",
@@ -51,10 +55,10 @@ export default function Home() {
       "Title": "",
       "Notes": "",
       "Company": "",
-      "asanaUser": "",
-      "asanaTaskName": "",
-      "hubspotLifecycleStage": "",
-      "userName": ""
+      "taskSubject": "",
+      "hubspotOwnerId": "",
+      "taskPriority": "",
+      "taskType": ""
     }
   });
 
@@ -72,7 +76,12 @@ export default function Home() {
     });
 
     keys.forEach((attr, index) => {
-      obj[attr] = values[index];
+      if (attr === "Your Message") {
+        let message = leadText.split("Your Message")[1].replace(/^\s+|\s+$/g, '');
+        obj[attr] = message;
+      } else {
+        obj[attr] = values[index];
+      }
     });
 
     setValue("Name", `${obj["First Name"]} ${obj["Last Name"]}`);
@@ -89,8 +98,6 @@ export default function Home() {
   }
 
   const clearData = () => {
-    setLeadText("");
-    setValue("asanaUser", "");
     reset();
     setPushDataActive(false);
   }
@@ -98,25 +105,35 @@ export default function Home() {
   const onSubmit = (data) => {
     let newData = {
       ...data,
-      asanaTaskName: `${data.Industry} - ${data.Name}`,
-      hubspotLifecycleStage: "New",
     };
-
-    // Create asana task
-    axios.post('https://automations.api.e-o3.com/asana/tasks', newData)
-      .then(res => console.log(res))
-      .catch(e => console.error(e));
+    let contactData = {
+      "Email": newData["Email"],
+      "Name": newData["Name"],
+      "Phone Number": newData["Phone Number"],
+      "Company": newData["Company"],
+    }
+    let taskData = {
+      taskBody: newData["Notes"],
+      hubspotOwnerId: newData["hubspotOwnerId"],
+      taskSubject: newData["taskSubject"],
+      taskPriority: newData["taskPriority"].toUpperCase(),
+      taskType: newData["taskType"].toUpperCase(),
+    }
 
     // Create hubspot contact
-    axios.post('https://automations.api.e-o3.com/hubspot/contacts', newData)
-      .then(res => console.log(res))
+    axios.post('https://automations.api.e-o3.com/hubspot/contacts', contactData)
+      .then(res => {
+        axios.post('https://automations.api.e-o3.com/hubspot/tasks', {...taskData, contactId: res.data.id})
+          .then(res => console.log(res))
+          .catch(e => console.error(e));
+      })
       .catch(e => console.error(e));
 
     setPushDataActive(false);
     reset();
   }
 
-  if (!asanaUsers) {
+  if (!hubspotOwners) {
     return (
       <div className={"flex h-screen justify-center items-center"}>
         <Spinner />
@@ -184,17 +201,55 @@ export default function Home() {
             render={({ field }) => <Input label={"Company"} className={"my-2"} {...field} />}
           />
           <Controller
-            name={"asanaUser"}
+            name={"hubspotOwnerId"}
             control={control}
             render={({ field }) => (
               <Select
-                items={asanaUsers.data}
-                label="Assigned Asana User"
-                placeholder="Select a user"
-                className="max-w-s"
+                items={hubspotOwners.results}
+                label="Assigned Hubspot User"
+                placeholder={"Select a user"}
+                className="max-w-s my-2"
+                selectedKeys={[field.value]}
+                onChange={field.onChange}
+              >
+                {(user) => <SelectItem value={user.email}>{user.email}</SelectItem>}
+              </Select>
+            )}
+          />
+          <Controller
+            name={"taskSubject"}
+            control={control}
+            render={({ field }) => <Input label={"Hubspot Task Name"} className={"my-2"} {...field} />}
+          />
+          <Controller
+            name={"taskPriority"}
+            control={control}
+            render={({ field }) => (
+              <Select
+                items={priorities}
+                label="Task Priority"
+                placeholder="Select a priority"
+                className="max-w-s my-2"
+                selectedKeys={[field.value]}
                 {...field}
               >
-                {(user) => <SelectItem key={user.gid} value={user.gid}>{user.name}</SelectItem>}
+                {(priority) => <SelectItem value={priority.value}>{priority.label}</SelectItem>}
+              </Select>
+            )}
+          />
+          <Controller
+            name={"taskType"}
+            control={control}
+            render={({ field }) => (
+              <Select
+                items={types}
+                label="Task Type"
+                placeholder="Select a type"
+                className="max-w-s my-2"
+                selectedKeys={[field.value]}
+                {...field}
+              >
+                {(priority) => <SelectItem value={priority.value}>{priority.label}</SelectItem>}
               </Select>
             )}
           />

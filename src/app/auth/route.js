@@ -74,4 +74,8 @@ const changePassword = async({ username, newPassword }) => {
   await redirect("/login")
 }
 
+const resetPassword = async() => {
+
+}
+
 export { initiateAuth, finishAuth, changePassword };

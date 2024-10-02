@@ -26,15 +26,26 @@ export default function Page() {
           <Controller
             name={"username"}
             control={control}
-            render={({ field }) => (<Input label={"Username"} className={"my-2"} {...field}/>)}
+            render={({ field }) => (
+              <Input label={"Username"} className={"my-2"} {...field}/>
+            )}
           />
           <Controller
             name={"password"}
             control={control}
-            render={({ field }) => (<Input label={"Password"} className={"my-2"} {...field}/>)}
+            render={({ field }) => (
+              <Input label={"Password"} className={"my-2"} {...field} type={"password"}/>
+            )}
           />
+          {/*<Button*/}
+          {/*  className={"my-2 mx-1"}*/}
+          {/*  color={"warning"}*/}
+          {/*  variant={"bordered"}*/}
+          {/*>*/}
+          {/*  Reset Password*/}
+          {/*</Button>*/}
           <Button
-            className={"my-2"}
+            className={"my-2 mx-1"}
             type={"submit"}
             color={"primary"}
           >
