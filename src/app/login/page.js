@@ -1,6 +1,6 @@
 'use client'
 
-import {Button, Divider, Input} from "@nextui-org/react";
+import {Button, Divider, Input} from "@heroui/react";
 import {useForm, Controller} from "react-hook-form";
 import {initiateAuth} from "@/app/auth/route";
 

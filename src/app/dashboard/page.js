@@ -2,7 +2,7 @@
 
 import React from "react";
 import styles from "./page.module.css";
-import {Button, Divider, Input, Select, SelectItem, Spinner, Textarea} from "@nextui-org/react";
+import {Button, Divider, Input, Select, SelectItem, Spinner, Textarea} from "@heroui/react";
 import useSWR from "swr";
 import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
@@ -143,7 +143,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <div className={"md:w-1/2 sm:w-full xs:w-full"}>
+      <div className={"md:w-1/2 sm:w-full xs:w-full gap-2"}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <h2>BES to BNA Lead Conversion</h2>
           <Divider />
@@ -162,7 +162,7 @@ export default function Home() {
             Autofill
           </Button>
 
-          <Divider className={"my-2"} />
+          <Divider />
 
           <h2>Populated Information</h2>
           <Controller
@@ -219,7 +219,7 @@ export default function Home() {
           <Controller
             name={"taskSubject"}
             control={control}
-            render={({ field }) => <Input label={"Hubspot Task Name"} className={"my-2"} {...field} />}
+            render={({ field }) => <Input label={"Hubspot Task Name"} {...field} />}
           />
           <Controller
             name={"taskPriority"}
@@ -256,7 +256,7 @@ export default function Home() {
           <Controller
             name={"Notes"}
             control={control}
-            render={({ field }) => <Textarea label={"Notes"} placeholder={""} className={"my-2"} minRows={4} {...field}/>}
+            render={({ field }) => <Textarea label={"Notes"} placeholder={""} minRows={4} {...field}/>}
           />
 
           <Button

@@ -1,6 +1,6 @@
 'use client'
 
-import {Button, Divider, Input} from "@nextui-org/react";
+import {Button, Divider, Input} from "@heroui/react";
 import {useForm, Controller} from "react-hook-form";
 import {changePassword, initiateAuth} from "@/app/auth/route";
 import {CognitoIdentityProviderClient, RespondToAuthChallengeCommand} from "@aws-sdk/client-cognito-identity-provider";
