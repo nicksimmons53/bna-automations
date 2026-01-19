@@ -1,4 +1,4 @@
-export function middleware(request) {
+export function proxy(request) {
   const currentUser = request.cookies.get('accessToken')?.value;
 
   if (currentUser && !request.nextUrl.pathname.startsWith('/dashboard')) {
